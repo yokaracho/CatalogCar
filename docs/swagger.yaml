@@ -1,0 +1,161 @@
+host: localhost:8080
+info:
+  contact:
+    email: trusvladimir02@gmail.com
+  description: This is a car catalog.
+  termsOfService: http://swagger.io/terms/
+  title: Car catalog API
+  version: "1.0"
+paths:
+  /api/cars/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Удаляет информацию об автомобиле из базы данных по указанному идентификатору.
+      parameters:
+      - description: Идентификатор удаляемого автомобиля
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Запись удалена
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Неверный идентификатор
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Запись не найдена
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Ошибка при удалении записи
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Удалить автомобиль по идентификатору
+    put:
+      consumes:
+      - application/json
+      description: Обновляет информацию об указанном автомобиле в базе данных.
+      parameters:
+      - description: Идентификатор автомобиля для обновления
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Информация обновлена
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Неверный идентификатор или неверные данные в запросе
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Ошибка при обновлении информации
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Обновить информацию об автомобиле
+  /api/data:
+    get:
+      description: Получает список автомобилей из базы данных.
+      parameters:
+      - description: Регистрационный номер
+        in: query
+        name: reg_num
+        type: string
+      - description: Марка
+        in: query
+        name: mark
+        type: string
+      - description: Модель
+        in: query
+        name: model
+        type: string
+      - description: Год выпуска
+        in: query
+        name: year
+        type: integer
+      - description: Смещение
+        in: query
+        name: offset
+        type: integer
+      - description: Ограничение
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: OK
+        "500":
+          description: Internal Server Error
+          schema:
+            type: Invalid
+      summary: Получить автомобили
+  /api/data/create:
+    post:
+      consumes:
+      - application/json
+      description: Добавляет новые автомобили в базу данных.
+      parameters:
+      - description: Список регистрационных номеров автомобилей
+        in: body
+        name: cars
+        required: true
+        schema:
+          type: object
+          required:
+            - reg_num
+          properties:
+            reg_num:
+              type: array
+              items:
+                type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Данные об автомобилях вставлены
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Неверные данные в запросе
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Ошибка при вставке данных об автомобилях
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Добавить автомобили
+swagger: "2.0"
