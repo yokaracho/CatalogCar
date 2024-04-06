@@ -1,6 +1,6 @@
 package handler
 
-import "NameService/pkg/service"
+import "CatalogCar/pkg/service"
 
 type Handler struct {
 	service service.Implementation

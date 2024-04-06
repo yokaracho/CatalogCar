@@ -1,10 +1,10 @@
 package main
 
 import (
-	CatalogCar "NameService"
-	handler2 "NameService/pkg/handler"
-	postgres "NameService/pkg/repository/postgres"
-	service2 "NameService/pkg/service"
+	CatalogCar "CatalogCar"
+	handler2 "CatalogCar/pkg/handler"
+	postgres "CatalogCar/pkg/repository/postgres"
+	service2 "CatalogCar/pkg/service"
 	"context"
 	"log"
 	"os"
@@ -23,7 +23,7 @@ import (
 func main() {
 	logger := GetLogger()
 
-	if err := godotenv.Load("/home/dev/NameService/.env"); err != nil {
+	if err := godotenv.Load("C:\\Users\\Volodyas\\GolandProjects\\CatalogCar\\.env"); err != nil {
 		logger.Fatalf("error loading env variables: %s", err.Error())
 	}
 	logger.Infof("env variables successfully loaded")

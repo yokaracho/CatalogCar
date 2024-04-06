@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"NameService/pkg/logger"
-	"NameService/pkg/model"
+	"CatalogCar/pkg/logger"
+	"CatalogCar/pkg/model"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -65,7 +65,6 @@ func (h *Handler) InsertCars(c echo.Context) error {
 // @Router /api/data [GET]
 func (h *Handler) GetCars(c echo.Context) error {
 	var filters model.CarFilter
-
 	filters.RegNum = c.QueryParam("reg_num")
 	filters.Mark = c.QueryParam("mark")
 	filters.Model = c.QueryParam("model")

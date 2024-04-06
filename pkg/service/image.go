@@ -1,7 +1,7 @@
 package service
 
 import (
-	"NameService/pkg/model"
+	"CatalogCar/pkg/model"
 	"context"
 )
 

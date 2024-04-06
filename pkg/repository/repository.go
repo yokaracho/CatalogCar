@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"NameService/pkg/model"
+	"CatalogCar/pkg/model"
 	"context"
 )
 
