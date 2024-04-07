@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"NameService/pkg/logger"
-	"NameService/pkg/model"
+	"CatalogCar/pkg/logger"
+	"CatalogCar/pkg/model"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -28,23 +28,29 @@ func (h *Handler) InsertCars(c echo.Context) error {
 	req := struct {
 		RegNums []string `json:"reg_num"`
 	}{}
-
 	if err := json.NewDecoder(c.Request().Body).Decode(&req); err != nil {
-		getLogger.Infof("Неверные данные в запросе: %s", err.Error())
-		getLogger.Debugf("Неверные данные в запросе: %s", err.Error())
+		getLogger.Errorf("Ошибка при декодировании запроса: %s", err.Error())
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Неверные данные в запросе"})
 	}
 
+	getLogger.Debugf("Вставка данных об автомобилях: %+v", req.RegNums)
 	rowsAffected, err := h.service.InsertCars(c.Request().Context(), req.RegNums)
 	if err != nil {
-		getLogger.Infof("Ошибка при вставке данных об автомобилях: %s", err.Error())
-		getLogger.Debugf("Ошибка при вставке данных об автомобилях: %s", err.Error())
+		getLogger.Errorf("Ошибка при вставке данных об автомобилях: %s", err.Error())
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Ошибка при вставке данных об автомобилях"})
 	}
 
-	getLogger.Infof("Данные об автомобилях вставлены, количество строк: %d", rowsAffected)
-	getLogger.Debugf("Данные об автомобилях вставлены, количество строк: %d", rowsAffected)
+	for _, regNum := range req.RegNums {
+		car, err := h.CallExternalAPI(regNum)
+		if err != nil {
+			getLogger.Errorf("Ошибка при вызове внешнего API для номера регистрации: %s", regNum)
+			return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Ошибка при вызове внешнего API"})
+		}
+		getLogger.Debugf("Получена информация о машине от внешнего API: %+v", car)
+		fmt.Println(car)
+	}
 
+	getLogger.Infof("Данные об автомобилях вставлены, количество строк: %d", rowsAffected)
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"message": fmt.Sprintf("Данные об автомобилях вставлены, количество строк: %d", rowsAffected),
 	})
@@ -65,7 +71,6 @@ func (h *Handler) InsertCars(c echo.Context) error {
 // @Router /api/data [GET]
 func (h *Handler) GetCars(c echo.Context) error {
 	var filters model.CarFilter
-
 	filters.RegNum = c.QueryParam("reg_num")
 	filters.Mark = c.QueryParam("mark")
 	filters.Model = c.QueryParam("model")
@@ -74,27 +79,31 @@ func (h *Handler) GetCars(c echo.Context) error {
 	if yearParam != "" {
 		year, err := strconv.Atoi(yearParam)
 		if err != nil {
-			return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid year parameter"})
+			getLogger.Errorf("Ошибка преобразования года: %s", err.Error())
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "Неверный параметр года"})
 		}
 		filters.Year = year
 	}
 
 	offset, err := strconv.Atoi(c.QueryParam("offset"))
 	if err != nil {
+		getLogger.Debugf("Используется смещение по умолчанию: %s", err.Error())
 		offset = 0
 	}
 	filters.Offset = strconv.Itoa(offset)
 
 	limit, err := strconv.Atoi(c.QueryParam("limit"))
 	if err != nil {
+		getLogger.Debugf("Используется лимит по умолчанию: %s", err.Error())
 		limit = 10
 	}
 	filters.Limit = strconv.Itoa(limit)
 
+	getLogger.Infof("Получение списка машин с фильтрами: %+v", filters)
 	cars, err := h.service.GetCars(context.Background(), filters)
 	if err != nil {
-		getLogger.Infof("Ошибка: %s", err.Error())
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Internal server error: " + err.Error()})
+		getLogger.Errorf("Ошибка при получении списка машин: %s", err.Error())
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Внутренняя ошибка сервера: " + err.Error()})
 	}
 
 	return c.JSON(http.StatusOK, cars)
@@ -121,23 +130,52 @@ func (h *Handler) UpdateInfo(c echo.Context) error {
 
 	var updateData model.CarModel
 	if err := c.Bind(&updateData); err != nil {
-		getLogger.Debugf("Ошибка при извлечении данных из запроса: %s", err.Error())
-		getLogger.Infof("Ошибка при извлечении данных из запроса: %s", err.Error())
+		getLogger.Errorf("Ошибка при извлечении данных из запроса: %s", err.Error())
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Неверные данные в запросе"})
 	}
 	updateData.CarID = id
 
 	getLogger.Debugf("Обновляем информацию для ID: %d, новые данные: %+v", updateData.CarID, updateData)
+	getLogger.Infof("Обновляем информацию для ID: %d", updateData.CarID)
 
 	if err := h.service.UpdateInfo(ctx, &updateData); err != nil {
-		getLogger.Debugf("Ошибка при обновлении информации: %s", err.Error())
-		getLogger.Infof("Ошибка при обновлении информации: %s", err.Error())
+		getLogger.Errorf("Ошибка при обновлении информации: %s", err.Error())
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Ошибка при обновлении информации"})
 	}
 
 	getLogger.Debugf("Информация успешно обновлена для ID: %d", updateData.CarID)
 	getLogger.Infof("Информация успешно обновлена для ID: %d", updateData.CarID)
 	return c.JSON(http.StatusOK, map[string]string{"message": "Информация обновлена"})
+}
+
+func (h *Handler) UpdateOwner(c echo.Context) error {
+	ctx := context.Background()
+
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		getLogger.Infof("Неверный идентификатор: %s", err.Error())
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Неверный идентификатор"})
+	}
+
+	var updateData model.PeopleModel
+	if err := c.Bind(&updateData); err != nil {
+		getLogger.Debugf("Ошибка при извлечении данных из запроса: %s", err.Error())
+		getLogger.Infof("Ошибка при извлечении данных из запроса: %s", err.Error())
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Неверные данные в запросе"})
+	}
+	updateData.OwnerID = id
+
+	getLogger.Debugf("Обновляем информацию для ID: %d, новые данные: %+v", updateData.OwnerID, updateData)
+
+	if err := h.service.UpdateOwner(ctx, &updateData); err != nil {
+		getLogger.Debugf("Ошибка при обновлении информации: %s", err.Error())
+		getLogger.Infof("Ошибка при обновлении информации: %s", err.Error())
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Ошибка при обновлении информации"})
+	}
+
+	getLogger.Debugf("Информация успешно обновлена для ID: %d", updateData.OwnerID)
+	getLogger.Infof("Информация о владельце успешно обновлена для ID: %d", updateData.OwnerID)
+	return c.JSON(http.StatusOK, map[string]string{"message": "Информация о владельце обновлена"})
 }
 
 // DeleteCarByID godoc
@@ -172,4 +210,26 @@ func (h *Handler) DeleteCarByID(c echo.Context) error {
 	getLogger.Debugf("Запись удалена")
 	getLogger.Infof("Запись удалена")
 	return c.JSON(http.StatusOK, map[string]string{"message": "Record deleted"})
+}
+
+func (h *Handler) CallExternalAPI(regNum string) (model.CarModel, error) {
+	url := fmt.Sprintf("https://external-api.com/info?regNum=%s", regNum)
+
+	resp, err := http.Get(url)
+	if err != nil {
+		return model.CarModel{}, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return model.CarModel{}, fmt.Errorf("ошибка при выполнении запроса: %s", resp.Status)
+	}
+
+	var car model.CarModel
+	err = json.NewDecoder(resp.Body).Decode(&car)
+	if err != nil {
+		return model.CarModel{}, err
+	}
+
+	return car, nil
 }

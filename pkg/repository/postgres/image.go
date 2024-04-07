@@ -1,7 +1,7 @@
 package db
 
 import (
-	"NameService/pkg/model"
+	"CatalogCar/pkg/model"
 	"context"
 	"strconv"
 )
@@ -10,10 +10,23 @@ func (r *Repository) GetCars(ctx context.Context, filters model.CarFilter) ([]*m
 	var cars []*model.CarModel
 	var args []interface{}
 	query := `
-        SELECT c.id, c.reg_num, c.mark, c.model, c.year, o.id, o.name, o.surname, o.patronymic
-        FROM cars c
-        JOIN owners o ON c.owner_id = o.id
-        WHERE 1=1`
+		SELECT 
+			c.id, 
+			CASE WHEN c.reg_num IS NULL THEN '' ELSE c.reg_num END AS reg_num,
+			CASE WHEN c.mark IS NULL THEN '' ELSE c.mark END AS mark,
+			CASE WHEN c.model IS NULL THEN '' ELSE c.model END AS model,
+ 			CASE WHEN c.year IS NULL THEN 0 ELSE c.year END AS year,
+   			CASE WHEN o.id IS NULL THEN 0 ELSE o.id END AS owner_id,
+			CASE WHEN o.name IS NULL THEN '' ELSE o.name END AS name,
+			CASE WHEN o.surname IS NULL THEN '' ELSE o.surname END AS surname,
+			CASE WHEN o.patronymic IS NULL THEN '' ELSE o.patronymic END AS patronymic
+		FROM 
+			cars c
+		LEFT JOIN 
+			owners o ON c.owner_id = o.id
+		WHERE 
+			1=1
+	`
 
 	if filters.RegNum != "" {
 		query += " AND c.reg_num = $" + strconv.Itoa(len(args)+1)
@@ -79,6 +92,14 @@ func (r *Repository) UpdateInfo(ctx context.Context, car *model.CarModel) error 
 		return err
 	}
 	return err
+}
+
+func (r *Repository) UpdateOwner(ctx context.Context, owner *model.PeopleModel) error {
+	_, err := r.pool.Exec(ctx, updateOwner, owner.OwnerID, owner.Name, owner.Surname, owner.Patronymic)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (r *Repository) DeleteCarByID(ctx context.Context, id int) (int64, error) {

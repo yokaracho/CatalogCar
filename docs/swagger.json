@@ -11,7 +11,7 @@
     },
     "host": "localhost:8080",
     "paths": {
-        "/api/cars/{id}": {
+        "/api/data/{id}": {
             "put": {
                 "description": "Обновляет информацию об указанном автомобиле в базе данных.",
                 "consumes": [
@@ -28,6 +28,39 @@
                         "name": "id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "description": "Данные для обновления информации об автомобиле",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "reg_num": {
+                                    "type": "string",
+                                    "description": "Регистрационный номер автомобиля"
+                                },
+                                "mark": {
+                                    "type": "string",
+                                    "description": "Марка автомобиля"
+                                },
+                                "model": {
+                                    "type": "string",
+                                    "description": "Модель автомобиля"
+                                },
+                                "year": {
+                                    "type": "integer",
+                                    "description": "Год выпуска автомобиля"
+                                }
+                            },
+                            "required": [
+                                "reg_num",
+                                "mark",
+                                "model",
+                                "year"
+                            ]
+                        }
                     }
                 ],
                 "responses": {
@@ -191,14 +224,21 @@
                 "summary": "Добавить автомобили",
                 "parameters": [
                     {
-                        "description": "Список регистрационных номеров автомобилей",
-                        "name": "reg_num",
                         "in": "body",
-                        "required": true,
+                        "name": "user",
+                        "description": "Добавить авто",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
+                            "type": "object",
+                            "required": [
+                                "reg_num"
+                            ],
+                            "properties": {
+                                "reg_num": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
                             }
                         }
                     }
@@ -222,6 +262,84 @@
                     },
                     "500": {
                         "description": "Ошибка при вставке данных об автомобилях",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/owner/{id}": {
+            "put": {
+                "description": "Обновляет информацию об указанном владельце в базе данных.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Обновить информацию об владельце",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Идентификатор владельца для обновления",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "description": "Данные для обновления информации об автомобиле",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "description": "Имя владельца"
+                                },
+                                "surname": {
+                                    "type": "string",
+                                    "description": "Фамилия владельца"
+                                },
+                                "patronymic": {
+                                    "type": "string",
+                                    "description": "Отчество владельца"
+                                }
+                            },
+                            "required": [
+                                "name",
+                                "surname",
+                                "patronymic"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Информация обновлена",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный идентификатор или неверные данные в запросе",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка при обновлении информации",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
