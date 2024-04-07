@@ -271,6 +271,84 @@
                     }
                 }
             }
+        },
+        "/api/owner/{id}": {
+            "put": {
+                "description": "Обновляет информацию об указанном владельце в базе данных.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Обновить информацию об владельце",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Идентификатор владельца для обновления",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "description": "Данные для обновления информации об автомобиле",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "description": "Имя владельца"
+                                },
+                                "surname": {
+                                    "type": "string",
+                                    "description": "Фамилия владельца"
+                                },
+                                "patronymic": {
+                                    "type": "string",
+                                    "description": "Отчество владельца"
+                                }
+                            },
+                            "required": [
+                                "name",
+                                "surname",
+                                "patronymic"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Информация обновлена",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный идентификатор или неверные данные в запросе",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка при обновлении информации",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

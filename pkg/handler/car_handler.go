@@ -139,6 +139,36 @@ func (h *Handler) UpdateInfo(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]string{"message": "Информация обновлена"})
 }
 
+func (h *Handler) UpdateOwner(c echo.Context) error {
+	ctx := context.Background()
+
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		getLogger.Infof("Неверный идентификатор: %s", err.Error())
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Неверный идентификатор"})
+	}
+
+	var updateData model.PeopleModel
+	if err := c.Bind(&updateData); err != nil {
+		getLogger.Debugf("Ошибка при извлечении данных из запроса: %s", err.Error())
+		getLogger.Infof("Ошибка при извлечении данных из запроса: %s", err.Error())
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Неверные данные в запросе"})
+	}
+	updateData.OwnerID = id
+
+	getLogger.Debugf("Обновляем информацию для ID: %d, новые данные: %+v", updateData.OwnerID, updateData)
+
+	if err := h.service.UpdateOwner(ctx, &updateData); err != nil {
+		getLogger.Debugf("Ошибка при обновлении информации: %s", err.Error())
+		getLogger.Infof("Ошибка при обновлении информации: %s", err.Error())
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Ошибка при обновлении информации"})
+	}
+
+	getLogger.Debugf("Информация успешно обновлена для ID: %d", updateData.OwnerID)
+	getLogger.Infof("Информация о владельце успешно обновлена для ID: %d", updateData.OwnerID)
+	return c.JSON(http.StatusOK, map[string]string{"message": "Информация о владельце обновлена"})
+}
+
 // DeleteCarByID godoc
 // @Summary Удалить автомобиль по идентификатору
 // @Description Удаляет информацию об автомобиле из базы данных по указанному идентификатору.

@@ -94,6 +94,14 @@ func (r *Repository) UpdateInfo(ctx context.Context, car *model.CarModel) error 
 	return err
 }
 
+func (r *Repository) UpdateOwner(ctx context.Context, owner *model.PeopleModel) error {
+	_, err := r.pool.Exec(ctx, updateOwner, owner.OwnerID, owner.Name, owner.Surname, owner.Patronymic)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (r *Repository) DeleteCarByID(ctx context.Context, id int) (int64, error) {
 	result, err := r.pool.Exec(ctx, deleteCar, id)
 	if err != nil {

@@ -5,7 +5,6 @@ import (
 )
 
 func (h *Handler) GetRouter() *echo.Echo {
-	// Create a new Echo instance
 	router := echo.New()
 
 	router.POST("/api/data/create", h.InsertCars)
@@ -13,6 +12,8 @@ func (h *Handler) GetRouter() *echo.Echo {
 	router.GET("/api/data", h.GetCars)
 
 	router.PUT("/api/data/:id", h.UpdateInfo)
+
+	router.PUT("/api/owner/:id", h.UpdateOwner)
 
 	router.DELETE("/api/data/:id", h.DeleteCarByID)
 

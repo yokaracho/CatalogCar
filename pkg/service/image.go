@@ -13,6 +13,10 @@ func (s *Service) UpdateInfo(ctx context.Context, car *model.CarModel) error {
 	return s.repository.UpdateInfo(ctx, car)
 }
 
+func (s *Service) UpdateOwner(ctx context.Context, owner *model.PeopleModel) error {
+	return s.repository.UpdateOwner(ctx, owner)
+}
+
 func (s *Service) GetCars(ctx context.Context, filters model.CarFilter) ([]*model.CarModel, error) {
 	return s.repository.GetCars(ctx, filters)
 }

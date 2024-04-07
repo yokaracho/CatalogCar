@@ -11,4 +11,10 @@ const (
 					model = $4,
 					year = $5
 				WHERE id = $1;`
+
+	updateOwner = `UPDATE owners
+					SET name = $2,
+						surname = $3,
+						patronymic = $4
+					WHERE id = $1;`
 )
